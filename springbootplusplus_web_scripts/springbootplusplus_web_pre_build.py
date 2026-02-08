@@ -298,10 +298,10 @@ def find_library_scripts(scripts_dir_name):
 library_scripts_dir = get_library_dir()
 sys.path.insert(0, str(library_scripts_dir))
 
-# Find and add cppcore scripts to Python path
-cppcore_scripts_dir = find_library_scripts("cppcore_scripts")
-if cppcore_scripts_dir:
-    sys.path.insert(0, str(cppcore_scripts_dir))
+# Find and add cpp_core scripts to Python path
+cpp_core_scripts_dir = find_library_scripts("cpp_core_scripts")
+if cpp_core_scripts_dir:
+    sys.path.insert(0, str(cpp_core_scripts_dir))
 
 # Find and add serializationlib_scripts to Python path
 serializationlib_scripts_dir = find_library_scripts("serializationlib_scripts")
