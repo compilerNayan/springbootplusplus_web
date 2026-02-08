@@ -19,7 +19,7 @@ FetchContent_Declare(
 # Fetch serverlib
 FetchContent_Declare(
     serverlib
-    GIT_REPOSITORY https://github.com/compilerNayan/arduionolibserver.git
+    GIT_REPOSITORY https://github.com/compilerNayan/arduinolibserver.git
     GIT_TAG        main
 )
 
