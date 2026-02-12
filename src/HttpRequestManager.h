@@ -40,7 +40,6 @@ class HttpRequestManager final : public IHttpRequestManager {
                 requestQueue->EnqueueRequest(request);
                 ProcessRequest();
                 ProcessResponse();
-                return true;
             }
         }
         if (secondServer != nullptr) {
@@ -49,10 +48,9 @@ class HttpRequestManager final : public IHttpRequestManager {
                 requestQueue->EnqueueRequest(request);
                 ProcessRequest();
                 ProcessResponse();
-                return true;
             }
         }
-        return false;
+        return true;
     }
     
     Public Bool ProcessRequest() override {
