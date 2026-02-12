@@ -47,7 +47,7 @@ class HttpRequestManager final : public IHttpRequestManager {
         Serial.println("Alive here");
         if (secondServer != nullptr) {
             Serial.println("Receiving request from secondary server");
-            Serial.println(server->GetId().c_str());
+            Serial.println(secondServer->GetId().c_str());
             IHttpRequestPtr request = secondServer->ReceiveMessage();
             if (request != nullptr) {
                 Serial.println("Received request from secondary server");
