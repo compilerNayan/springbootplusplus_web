@@ -20,9 +20,11 @@ class HttpRequestManager final : public IHttpRequestManager {
     Private IHttpResponseProcessorPtr responseProcessor;
 
     Private IServerPtr server;
+    Private IServerPtr secondServer;
 
     Public HttpRequestManager() {
         server = ServerProvider::GetDefaultServer();
+        secondServer = ServerProvider::GetSecondServer();
     }
     
     Public ~HttpRequestManager() override = default;
@@ -32,17 +34,21 @@ class HttpRequestManager final : public IHttpRequestManager {
     // ============================================================================
     
     Public Bool RetrieveRequest() override {
-        if (server == nullptr) {
-            return false;
+        if (server != nullptr) {
+            IHttpRequestPtr request = server->ReceiveMessage();
+            if (request != nullptr) {
+                requestQueue->EnqueueRequest(request);
+                return true;
+            }
         }
-        
-        IHttpRequestPtr request = server->ReceiveMessage();
-        if (request == nullptr) {
-            return false;
+        if (secondServer != nullptr) {
+            IHttpRequestPtr request = secondServer->ReceiveMessage();
+            if (request != nullptr) {
+                requestQueue->EnqueueRequest(request);
+                return true;
+            }
         }
-        
-        requestQueue->EnqueueRequest(request);
-        return true;
+        return false;
     }
     
     Public Bool ProcessRequest() override {
@@ -84,15 +90,19 @@ class HttpRequestManager final : public IHttpRequestManager {
         if (server == nullptr) {
             return false;
         }
-        
         Bool result = server->Start(port);
-        
+        if (result && secondServer != nullptr) {
+            secondServer->Start(port);
+        }
         return result;
     }
     
     Public Void StopServer() override {
         if (server != nullptr) {
             server->Stop();
+        }
+        if (secondServer != nullptr) {
+            secondServer->Stop();
         }
     }
 };
