@@ -52,7 +52,7 @@ class HttpResponseProcessor final : public IHttpResponseProcessor {
         
         // Send response using server
         server->SendMessage(requestId, responseString);
-        return true;
+        return false;
     }
 };
 
