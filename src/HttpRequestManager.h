@@ -38,6 +38,8 @@ class HttpRequestManager final : public IHttpRequestManager {
             IHttpRequestPtr request = server->ReceiveMessage();
             if (request != nullptr) {
                 requestQueue->EnqueueRequest(request);
+                ProcessRequest();
+                ProcessResponse();
                 return true;
             }
         }
@@ -45,6 +47,8 @@ class HttpRequestManager final : public IHttpRequestManager {
             IHttpRequestPtr request = secondServer->ReceiveMessage();
             if (request != nullptr) {
                 requestQueue->EnqueueRequest(request);
+                ProcessRequest();
+                ProcessResponse();
                 return true;
             }
         }

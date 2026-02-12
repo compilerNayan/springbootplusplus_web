@@ -51,7 +51,8 @@ class HttpResponseProcessor final : public IHttpResponseProcessor {
         }
         
         // Send response using server
-        return server->SendMessage(requestId, responseString);
+        server->SendMessage(requestId, responseString);
+        return true;
     }
 };
 
