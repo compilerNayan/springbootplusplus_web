@@ -40,7 +40,7 @@ class HttpResponseProcessor final : public IHttpResponseProcessor {
         
         // Get request ID from response
         StdString requestId = StdString(response->GetRequestId());
-        if (requestId.empty()) {
+        if (requestId.empty() || requestId == "ignore") {
             return false;
         }
         
