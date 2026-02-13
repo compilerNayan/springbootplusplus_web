@@ -15,7 +15,7 @@ class HttpResponseProcessor final : public IHttpResponseProcessor {
     Private IServerPtr server;
 
     Public HttpResponseProcessor() 
-        : server(ServerProvider::GetDefaultServer()) {
+        : server(ServerProvider::GetSecondServer()) {
     }
     
     Public ~HttpResponseProcessor() override = default;
