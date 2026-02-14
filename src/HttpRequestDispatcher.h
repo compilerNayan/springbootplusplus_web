@@ -29,15 +29,15 @@
 /* @Component */
 class HttpRequestDispatcher : public IHttpRequestDispatcher {
 
-    Private UnorderedStdMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> getMappings;
-    Private UnorderedStdMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> postMappings;
-    Private UnorderedStdMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> putMappings;
-    Private UnorderedStdMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> patchMappings;
-    Private UnorderedStdMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> deleteMappings;
-    Private UnorderedStdMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> optionsMappings;
-    Private UnorderedStdMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> headMappings;
-    Private UnorderedStdMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> traceMappings;
-    Private UnorderedStdMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> connectMappings;
+    Private StdUnorderedMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> getMappings;
+    Private StdUnorderedMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> postMappings;
+    Private StdUnorderedMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> putMappings;
+    Private StdUnorderedMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> patchMappings;
+    Private StdUnorderedMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> deleteMappings;
+    Private StdUnorderedMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> optionsMappings;
+    Private StdUnorderedMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> headMappings;
+    Private StdUnorderedMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> traceMappings;
+    Private StdUnorderedMap<StdString, std::function<IHttpResponsePtr(CStdString, StdMap<StdString, StdString>)>> connectMappings;
 
     Private EndpointTrie endpointTrie;
 
