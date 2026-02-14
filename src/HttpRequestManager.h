@@ -37,14 +37,14 @@ class HttpRequestManager final : public IHttpRequestManager {
         if (server != nullptr) {
             IHttpRequestPtr request = server->ReceiveMessage();
             if (request != nullptr) {
-                Serial.println("Received request from primary server");
+                //Serial.println("Received request from primary server");
                 requestQueue->EnqueueRequest(request);
             }
         }
         if (secondServer != nullptr) {
             IHttpRequestPtr request = secondServer->ReceiveMessage();
             if (request != nullptr) {
-                Serial.println("Received request from secondary server");
+                //Serial.println("Received request from secondary server");
                 requestQueue->EnqueueRequest(request);
             }
         }
