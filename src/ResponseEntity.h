@@ -19,7 +19,7 @@
 template<typename T>
 class ResponseEntity {
     Private HttpStatus status_;
-    Private Map<StdString, StdString> headers_;
+    Private StdMap<StdString, StdString> headers_;
     Private T body_;
 
 public:
@@ -40,7 +40,7 @@ public:
     /**
      * Constructor with status, body, and headers
      */
-    ResponseEntity(HttpStatus status, const T& body, const Map<StdString, StdString>& headers) 
+    ResponseEntity(HttpStatus status, const T& body, const StdMap<StdString, StdString>& headers) 
         : status_(status), headers_(headers), body_(body) {
     }
 
@@ -87,7 +87,7 @@ public:
     /**
      * Get all headers
      */
-    const Map<StdString, StdString>& GetHeaders() const {
+    const StdMap<StdString, StdString>& GetHeaders() const {
         return headers_;
     }
 
@@ -160,7 +160,7 @@ public:
     /**
      * Set headers (replaces all existing headers)
      */
-    Void SetHeaders(const Map<StdString, StdString>& headers) {
+    Void SetHeaders(const StdMap<StdString, StdString>& headers) {
         headers_ = headers;
     }
 
@@ -168,7 +168,7 @@ public:
      * Set headers (fluent/chaining method)
      * Returns reference to self for method chaining
      */
-    ResponseEntity<T>& WithHeaders(const Map<StdString, StdString>& headers) {
+    ResponseEntity<T>& WithHeaders(const StdMap<StdString, StdString>& headers) {
         headers_ = headers;
         return *this;
     }
@@ -223,7 +223,7 @@ public:
     /**
      * Create ResponseEntity with OK (200) status and headers
      */
-    Static ResponseEntity<T> Ok(const T& body, const Map<StdString, StdString>& headers) {
+    Static ResponseEntity<T> Ok(const T& body, const StdMap<StdString, StdString>& headers) {
         return ResponseEntity<T>(HttpStatus::OK, body, headers);
     }
 
@@ -237,7 +237,7 @@ public:
     /**
      * Create ResponseEntity with CREATED (201) status and headers
      */
-    Static ResponseEntity<T> Created(const T& body, const Map<StdString, StdString>& headers) {
+    Static ResponseEntity<T> Created(const T& body, const StdMap<StdString, StdString>& headers) {
         return ResponseEntity<T>(HttpStatus::CREATED, body, headers);
     }
 
@@ -321,7 +321,7 @@ public:
     /**
      * Create ResponseEntity with custom status and headers
      */
-    Static ResponseEntity<T> Status(HttpStatus status, const T& body, const Map<StdString, StdString>& headers) {
+    Static ResponseEntity<T> Status(HttpStatus status, const T& body, const StdMap<StdString, StdString>& headers) {
         return ResponseEntity<T>(status, body, headers);
     }
 };
@@ -332,7 +332,7 @@ public:
 template<>
 class ResponseEntity<Void> {
     Private HttpStatus status_;
-    Private Map<StdString, StdString> headers_;
+    Private StdMap<StdString, StdString> headers_;
 
 public:
     /**
@@ -352,7 +352,7 @@ public:
     /**
      * Constructor with status and headers
      */
-    ResponseEntity(HttpStatus status, const Map<StdString, StdString>& headers) 
+    ResponseEntity(HttpStatus status, const StdMap<StdString, StdString>& headers) 
         : status_(status), headers_(headers) {
     }
 
@@ -366,7 +366,7 @@ public:
     /**
      * Get all headers
      */
-    const Map<StdString, StdString>& GetHeaders() const {
+    const StdMap<StdString, StdString>& GetHeaders() const {
         return headers_;
     }
 
@@ -423,7 +423,7 @@ public:
     /**
      * Set headers (replaces all existing headers)
      */
-    Void SetHeaders(const Map<StdString, StdString>& headers) {
+    Void SetHeaders(const StdMap<StdString, StdString>& headers) {
         headers_ = headers;
     }
 
@@ -431,7 +431,7 @@ public:
      * Set headers (fluent/chaining method)
      * Returns reference to self for method chaining
      */
-    ResponseEntity<Void>& WithHeaders(const Map<StdString, StdString>& headers) {
+    ResponseEntity<Void>& WithHeaders(const StdMap<StdString, StdString>& headers) {
         headers_ = headers;
         return *this;
     }
@@ -471,7 +471,7 @@ public:
     /**
      * Create ResponseEntity with OK (200) status and headers
      */
-    Static ResponseEntity<Void> Ok(const Map<StdString, StdString>& headers) {
+    Static ResponseEntity<Void> Ok(const StdMap<StdString, StdString>& headers) {
         return ResponseEntity<Void>(HttpStatus::OK, headers);
     }
 
@@ -513,7 +513,7 @@ public:
     /**
      * Create ResponseEntity with custom status and headers
      */
-    Static ResponseEntity<Void> Status(HttpStatus status, const Map<StdString, StdString>& headers) {
+    Static ResponseEntity<Void> Status(HttpStatus status, const StdMap<StdString, StdString>& headers) {
         return ResponseEntity<Void>(status, headers);
     }
 };

@@ -62,7 +62,7 @@ namespace ResponseEntityConverter {
         StdString statusMessage = GetStatusMessage(status);
         
         // Get headers
-        Map<StdString, StdString> headers = entity.GetHeaders();
+        StdMap<StdString, StdString> headers = entity.GetHeaders();
         
         // Convert body to string
         StdString bodyStr;
@@ -113,7 +113,7 @@ namespace ResponseEntityConverter {
         StdString statusMessage = GetStatusMessage(status);
         
         // Get headers
-        Map<StdString, StdString> headers = entity.GetHeaders();
+        StdMap<StdString, StdString> headers = entity.GetHeaders();
         
         // Convert body to string
         StdString bodyStr;
@@ -156,7 +156,7 @@ namespace ResponseEntityConverter {
         StdString statusMessage = GetStatusMessage(status);
         
         // Get headers
-        Map<StdString, StdString> headers = entity.GetHeaders();
+        StdMap<StdString, StdString> headers = entity.GetHeaders();
         
         // Void has no body
         StdString bodyStr = "";
@@ -177,7 +177,7 @@ namespace ResponseEntityConverter {
         StdString statusMessage = GetStatusMessage(status);
         
         // Get headers
-        Map<StdString, StdString> headers = entity.GetHeaders();
+        StdMap<StdString, StdString> headers = entity.GetHeaders();
         
         // Void has no body
         StdString bodyStr = "";
@@ -222,7 +222,7 @@ namespace ResponseEntityConverter {
         StdString emptyRequestId = "";
         UInt statusCode = 200;
         StdString statusMessage = "OK";
-        Map<StdString, StdString> headers;
+        StdMap<StdString, StdString> headers;
         headers["Content-Type"] = "application/json";
         
         IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(emptyRequestId, statusCode, statusMessage, headers, bodyStr);
@@ -263,7 +263,7 @@ namespace ResponseEntityConverter {
         // Create SimpleHttpResponse with 200 OK status
         UInt statusCode = 200;
         StdString statusMessage = "OK";
-        Map<StdString, StdString> headers;
+        StdMap<StdString, StdString> headers;
         headers["Content-Type"] = "application/json";
         
         IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(requestId, statusCode, statusMessage, headers, bodyStr);
@@ -282,7 +282,7 @@ namespace ResponseEntityConverter {
         StdString emptyRequestId = "";
         UInt statusCode = 200;
         StdString statusMessage = "OK";
-        Map<StdString, StdString> headers;
+        StdMap<StdString, StdString> headers;
         StdString emptyBody = "";
         
         IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(emptyRequestId, statusCode, statusMessage, headers, emptyBody);
@@ -300,7 +300,7 @@ namespace ResponseEntityConverter {
         // Create SimpleHttpResponse with 200 OK status (empty body)
         UInt statusCode = 200;
         StdString statusMessage = "OK";
-        Map<StdString, StdString> headers;
+        StdMap<StdString, StdString> headers;
         StdString emptyBody = "";
         
         IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(requestId, statusCode, statusMessage, headers, emptyBody);

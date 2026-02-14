@@ -215,16 +215,16 @@ def generate_function_pointer_advanced(formatted_endpoint: Dict[str, Any]) -> st
     # Return type is now IHttpResponsePtr instead of StdString
     if has_request_body and has_path_variable:
         # Both are used
-        lambda_signature = "[](CStdString payload, Map<StdString, StdString> variables) -> IHttpResponsePtr"
+        lambda_signature = "[](CStdString payload, StdMap<StdString, StdString> variables) -> IHttpResponsePtr"
     elif has_request_body and not has_path_variable:
         # Only payload is used
-        lambda_signature = "[](CStdString payload, Map<StdString, StdString> /*variables*/) -> IHttpResponsePtr"
+        lambda_signature = "[](CStdString payload, StdMap<StdString, StdString> /*variables*/) -> IHttpResponsePtr"
     elif not has_request_body and has_path_variable:
         # Only variables is used
-        lambda_signature = "[](CStdString /*payload*/, Map<StdString, StdString> variables) -> IHttpResponsePtr"
+        lambda_signature = "[](CStdString /*payload*/, StdMap<StdString, StdString> variables) -> IHttpResponsePtr"
     else:
         # Neither is used (no parameters)
-        lambda_signature = "[](CStdString /*payload*/, Map<StdString, StdString> /*variables*/) -> IHttpResponsePtr"
+        lambda_signature = "[](CStdString /*payload*/, StdMap<StdString, StdString> /*variables*/) -> IHttpResponsePtr"
     
     # Generate the function pointer code
     code = f"{mapping_var}[\"{complete_url}\"] = {lambda_signature} {{\n"

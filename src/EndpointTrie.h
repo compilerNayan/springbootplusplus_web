@@ -10,11 +10,11 @@
  */
 struct EndpointMatchResult {
     StdString pattern;  // The matched endpoint pattern (e.g., "/api/user/{userId}/get")
-    Map<StdString, StdString> variables;  // Map of variable names to values (e.g., {"userId": "123"})
+    StdMap<StdString, StdString> variables;  // Map of variable names to values (e.g., {"userId": "123"})
     Bool found;  // Whether a match was found
     
     EndpointMatchResult() : found(false) {}
-    EndpointMatchResult(const StdString& pat, const Map<StdString, StdString>& vars) 
+    EndpointMatchResult(const StdString& pat, const StdMap<StdString, StdString>& vars) 
         : pattern(pat), variables(vars), found(true) {}
 };
 
@@ -24,11 +24,11 @@ struct EndpointMatchResult {
 class EndpointTrieNode {
     Private
         // Children for literal path segments (e.g., "user", "api")
-        Map<StdString, EndpointTrieNode*> literalChildren;
+        StdMap<StdString, EndpointTrieNode*> literalChildren;
         
         // Child for variable path segments (e.g., "{userId}")
         // Stores the variable name and the child node
-        Map<StdString, EndpointTrieNode*> variableChildren;  // key: variable name, value: child node
+        StdMap<StdString, EndpointTrieNode*> variableChildren;  // key: variable name, value: child node
         
         // Endpoint pattern stored at this node (if this is a leaf)
         StdString endpointPattern;
@@ -80,7 +80,7 @@ class EndpointTrieNode {
         }
         
         // Get all variable children (for matching)
-        const Map<StdString, EndpointTrieNode*>& GetVariableChildren() const {
+        const StdMap<StdString, EndpointTrieNode*>& GetVariableChildren() const {
             return variableChildren;
         }
         
@@ -132,8 +132,8 @@ class EndpointTrie {
          * "/api/user/123/" -> ["api", "user", "123", ""] (empty segment for trailing slash)
          * "/api//user" -> ["api", "user"] (empty segments from // are filtered out)
          */
-        Vector<StdString> SplitPath(const StdString& path) const {
-            Vector<StdString> segments;
+        StdVector<StdString> SplitPath(const StdString& path) const {
+            StdVector<StdString> segments;
             if (path.empty() || path == "/") {
                 return segments;
             }
@@ -207,9 +207,9 @@ class EndpointTrie {
          */
         EndpointMatchResult SearchRecursive(
             EndpointTrieNode* node,
-            const Vector<StdString>& segments,
+            const StdVector<StdString>& segments,
             size_t index,
-            Map<StdString, StdString>& variables
+            StdMap<StdString, StdString>& variables
         ) const {
             // If we've processed all segments
             if (index >= segments.size()) {
@@ -241,7 +241,7 @@ class EndpointTrie {
                 }
                 // If there are more segments after the empty one, try variable match
                 // (This handles cases like /api/{var}//something, though uncommon)
-                const Map<StdString, EndpointTrieNode*>& varChildren = node->GetVariableChildren();
+                const StdMap<StdString, EndpointTrieNode*>& varChildren = node->GetVariableChildren();
                 for (const auto& pair : varChildren) {
                     StdString varName = pair.first;
                     EndpointTrieNode* varChild = pair.second;
@@ -271,7 +271,7 @@ class EndpointTrie {
             }
             
             // Try variable match (try all variable children)
-            const Map<StdString, EndpointTrieNode*>& varChildren = node->GetVariableChildren();
+            const StdMap<StdString, EndpointTrieNode*>& varChildren = node->GetVariableChildren();
             for (const auto& pair : varChildren) {
                 StdString varName = pair.first;
                 EndpointTrieNode* varChild = pair.second;
@@ -307,7 +307,7 @@ class EndpointTrie {
          * @param pattern The endpoint pattern (e.g., "/api/user/{userId}/get")
          */
         Void Insert(const StdString& pattern) {
-            Vector<StdString> segments = SplitPath(pattern);
+            StdVector<StdString> segments = SplitPath(pattern);
             EndpointTrieNode* current = root;
             
             for (const StdString& segment : segments) {
@@ -330,8 +330,8 @@ class EndpointTrie {
          * @return EndpointMatchResult containing the matched pattern and variable values
          */
         EndpointMatchResult Search(const StdString& path) const {
-            Vector<StdString> segments = SplitPath(path);
-            Map<StdString, StdString> variables;
+            StdVector<StdString> segments = SplitPath(path);
+            StdMap<StdString, StdString> variables;
             return SearchRecursive(root, segments, 0, variables);
         }
         
