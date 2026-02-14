@@ -34,7 +34,6 @@ class HttpRequestManager final : public IHttpRequestManager {
     // ============================================================================
     
     Public Bool RetrieveRequest() override {
-        Serial.println("Retrieving request");
         if (server != nullptr) {
             IHttpRequestPtr request = server->ReceiveMessage();
             if (request != nullptr) {
@@ -43,7 +42,6 @@ class HttpRequestManager final : public IHttpRequestManager {
             }
         }
         if (secondServer != nullptr) {
-            Serial.println(secondServer->GetId().c_str());
             IHttpRequestPtr request = secondServer->ReceiveMessage();
             if (request != nullptr) {
                 Serial.println("Received request from secondary server");
