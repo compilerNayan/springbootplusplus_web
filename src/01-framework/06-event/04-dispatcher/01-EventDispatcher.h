@@ -10,11 +10,11 @@
 
 class EventDispatcher final : public IEventDispatcher {
 
-    UnorderedMap<StdString, std::function<StdString(CStdString)>> getMappings;
-    UnorderedMap<StdString, std::function<StdString(CStdString)>> postMappings;
-    UnorderedMap<StdString, std::function<StdString(CStdString)>> putMappings;
-    UnorderedMap<StdString, std::function<StdString(CStdString)>> patchMappings;
-    UnorderedMap<StdString, std::function<StdString(CStdString)>> deleteMappings;
+    StdUnorderedMap<StdString, std::function<StdString(CStdString)>> getMappings;
+    StdUnorderedMap<StdString, std::function<StdString(CStdString)>> postMappings;
+    StdUnorderedMap<StdString, std::function<StdString(CStdString)>> putMappings;
+    StdUnorderedMap<StdString, std::function<StdString(CStdString)>> patchMappings;
+    StdUnorderedMap<StdString, std::function<StdString(CStdString)>> deleteMappings;
 
     Public EventDispatcher() {
         InitializeMappings();
