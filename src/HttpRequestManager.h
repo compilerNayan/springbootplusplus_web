@@ -34,6 +34,7 @@ class HttpRequestManager final : public IHttpRequestManager {
     // ============================================================================
     
     Public Bool RetrieveRequest() override {
+        Serial.println("Retrieving request");
         if (server != nullptr) {
             IHttpRequestPtr request = server->ReceiveMessage();
             if (request != nullptr) {
