@@ -35,15 +35,15 @@ class HttpRequestManager final : public IHttpRequestManager {
     
     Public Bool RetrieveRequest() override {
         Serial.println("RetrieveRequest");
-        /*if (server != nullptr) {
+        if (server != nullptr) {
             Serial.println("RetrieveRequest from primary server");
             IHttpRequestPtr request = server->ReceiveMessage();
             if (request != nullptr) {
                 Serial.println("Received request from primary server");
                 //requestQueue->EnqueueRequest(request);
             } 
-        } */
-        Serial.println("alive");
+        } 
+        /*Serial.println("alive");
         if (secondServer != nullptr) {
             Serial.println("RetrieveRequest from secondary server");
             IHttpRequestPtr request = secondServer->ReceiveMessage();
@@ -51,7 +51,7 @@ class HttpRequestManager final : public IHttpRequestManager {
                 Serial.println("Received request from secondary server");
                 requestQueue->EnqueueRequest(request);
             }
-        } 
+        } */
         ProcessRequest();
         ProcessResponse();
         delay(1000);
