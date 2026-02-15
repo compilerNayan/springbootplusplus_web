@@ -38,16 +38,19 @@ class HttpRequestManager final : public IHttpRequestManager {
     // ============================================================================
     
     Private Void RetrieveRequestFromPrimaryServer() {
+        Serial.println("RetrieveRequest");
         if (server == nullptr) return;
+        Serial.println("RetrieveRequest from primary server");
         IHttpRequestPtr request = server->ReceiveMessage();
         if (request != nullptr) {
             Serial.println("Received request from primary server");
-            requestQueue->EnqueueRequest(request);
+            // requestQueue->EnqueueRequest(request);
         }
     }
 
     Private Void RetrieveRequestFromSecondaryServer() {
         if (secondServer == nullptr) return;
+        Serial.println("RetrieveRequest from secondary server");
         IHttpRequestPtr request = secondServer->ReceiveMessage();
         if (request != nullptr) {
             Serial.println("Received request from secondary server");
@@ -60,12 +63,13 @@ class HttpRequestManager final : public IHttpRequestManager {
             RetrieveRequestFromPrimaryServer();
         });
 
-        threadPool->Submit([this]() {
-            RetrieveRequestFromSecondaryServer();
-        });
+       // threadPool->Submit([this]() {
+       //     RetrieveRequestFromSecondaryServer();
+       // });
 
-        ProcessRequest();
-        ProcessResponse();
+        //ProcessRequest();
+        //ProcessResponse();
+        delay(1000);
         return true;
     }
     
