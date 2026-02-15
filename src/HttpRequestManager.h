@@ -54,6 +54,7 @@ class HttpRequestManager final : public IHttpRequestManager {
         }
         ProcessRequest();
         ProcessResponse();
+        delay(1000);
         return true;
     }
     
