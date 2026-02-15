@@ -54,7 +54,7 @@ class HttpRequestManager final : public IHttpRequestManager {
         IHttpRequestPtr request = secondServer->ReceiveMessage();
         if (request != nullptr) {
             Serial.println("Received request from secondary server");
-            requestQueue->EnqueueRequest(request);
+            //requestQueue->EnqueueRequest(request);
         }
     }
 
@@ -63,9 +63,9 @@ class HttpRequestManager final : public IHttpRequestManager {
             RetrieveRequestFromPrimaryServer();
         });
 
-       // threadPool->Submit([this]() {
-       //     RetrieveRequestFromSecondaryServer();
-       // });
+        threadPool->Submit([this]() {
+            RetrieveRequestFromSecondaryServer();
+        });
 
         //ProcessRequest();
         //ProcessResponse();
