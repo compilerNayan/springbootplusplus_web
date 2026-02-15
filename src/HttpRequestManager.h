@@ -67,8 +67,8 @@ class HttpRequestManager final : public IHttpRequestManager {
             RetrieveRequestFromSecondaryServer();
         });
 
-        ProcessRequest();
-        ProcessResponse();
+        //ProcessRequest();
+        //ProcessResponse();
         delay(1000);
         return true;
     }
