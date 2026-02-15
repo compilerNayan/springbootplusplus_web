@@ -56,13 +56,13 @@ class HttpRequestManager final : public IHttpRequestManager {
     }
 
     Public Bool RetrieveRequest() override {
-        threadPool->Submit([this]() {
+        //threadPool->Submit([this]() {
             RetrieveRequestFromPrimaryServer();
-        });
+        //});
 
-        threadPool->Submit([this]() {
+        //threadPool->Submit([this]() {
             RetrieveRequestFromSecondaryServer();
-        });
+        //});
 
         ProcessRequest();
         ProcessResponse();
