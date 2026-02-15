@@ -6,6 +6,7 @@
 #include "IHttpRequestProcessor.h"
 #include "IHttpResponseProcessor.h"
 #include <ServerProvider.h>
+#include <IThreadPool.h>
 
 /* @Component */
 class HttpRequestManager final : public IHttpRequestManager {
@@ -18,6 +19,9 @@ class HttpRequestManager final : public IHttpRequestManager {
 
     /* @Autowired */
     Private IHttpResponseProcessorPtr responseProcessor;
+
+    /* @Autowired */
+    Private IThreadPoolPtr threadPool;
 
     Private IServerPtr server;
     Private IServerPtr secondServer;
@@ -33,27 +37,38 @@ class HttpRequestManager final : public IHttpRequestManager {
     // HTTP Request Management Operations
     // ============================================================================
     
-    Public Bool RetrieveRequest() override {
+    Private Void RetrieveRequestFromPrimaryServer() {
         Serial.println("RetrieveRequest");
-        if (server != nullptr) {
-            Serial.println("RetrieveRequest from primary server");
-            IHttpRequestPtr request = server->ReceiveMessage();
-            if (request != nullptr) {
-                Serial.println("Received request from primary server");
-                //requestQueue->EnqueueRequest(request);
-            } 
-        } 
-        /*Serial.println("alive");
-        if (secondServer != nullptr) {
-            Serial.println("RetrieveRequest from secondary server");
-            IHttpRequestPtr request = secondServer->ReceiveMessage();
-            if (request != nullptr) {
-                Serial.println("Received request from secondary server");
-                requestQueue->EnqueueRequest(request);
-            }
-        } */
-        ProcessRequest();
-        ProcessResponse();
+        if (server == nullptr) return;
+        Serial.println("RetrieveRequest from primary server");
+        IHttpRequestPtr request = server->ReceiveMessage();
+        if (request != nullptr) {
+            Serial.println("Received request from primary server");
+            // requestQueue->EnqueueRequest(request);
+        }
+    }
+
+    Private Void RetrieveRequestFromSecondaryServer() {
+        if (secondServer == nullptr) return;
+        Serial.println("RetrieveRequest from secondary server");
+        IHttpRequestPtr request = secondServer->ReceiveMessage();
+        if (request != nullptr) {
+            Serial.println("Received request from secondary server");
+            requestQueue->EnqueueRequest(request);
+        }
+    }
+
+    Public Bool RetrieveRequest() override {
+        threadPool->Submit([this]() {
+            RetrieveRequestFromPrimaryServer();
+        });
+
+       // threadPool->Submit([this]() {
+       //     RetrieveRequestFromSecondaryServer();
+       // });
+
+        //ProcessRequest();
+        //ProcessResponse();
         delay(1000);
         return true;
     }
