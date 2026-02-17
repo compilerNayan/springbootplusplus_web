@@ -7,6 +7,7 @@
 #include "IHttpResponseProcessor.h"
 #include <ServerProvider.h>
 #include <IThreadPool.h>
+#include <ILogger.h>
 
 /* @Component */
 class HttpRequestManager final : public IHttpRequestManager {
@@ -22,6 +23,9 @@ class HttpRequestManager final : public IHttpRequestManager {
 
     /* @Autowired */
     Private IThreadPoolPtr threadPool;
+
+    /* @Autowired */
+    Private ILoggerPtr logger;
 
     Private IServerPtr server;
     Private IServerPtr secondServer;
@@ -41,8 +45,8 @@ class HttpRequestManager final : public IHttpRequestManager {
         if (server == nullptr) return;
         IHttpRequestPtr request = server->ReceiveMessage();
         if (request != nullptr) {
-            Serial.println("Received request from primary server");
-             requestQueue->EnqueueRequest(request);
+            logger->Info(Tag::Untagged, StdString("Received request from primary server"));
+            requestQueue->EnqueueRequest(request);
         }
     }
 
@@ -50,7 +54,7 @@ class HttpRequestManager final : public IHttpRequestManager {
         if (secondServer == nullptr) return;
         IHttpRequestPtr request = secondServer->ReceiveMessage();
         if (request != nullptr) {
-            Serial.println("Received request from secondary server");
+            logger->Info(Tag::Untagged, StdString("Received request from secondary server"));
             requestQueue->EnqueueRequest(request);
         }
     }
