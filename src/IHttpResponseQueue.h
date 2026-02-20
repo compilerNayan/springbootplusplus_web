@@ -15,17 +15,24 @@ class IHttpResponseQueue {
     // ============================================================================
     
     /**
-     * @brief Enqueues an HTTP response into the queue
+     * @brief Enqueues an HTTP response into the queue. Routes by response->GetRequestId():
+     *        "local_" prefix -> local queue, "cloud_" prefix -> cloud queue.
      * @param response Pointer to the HTTP response to enqueue
      */
     Public Virtual Void EnqueueResponse(IHttpResponsePtr response) = 0;
     
     /**
-     * @brief Gets and removes the front HTTP response from the queue
-     * @return Pointer to the HTTP response, or nullptr if queue is empty
+     * @brief Gets and removes the front HTTP response from the local queue. Thread-safe.
+     * @return Pointer to the HTTP response, or nullptr if local queue is empty
      */
-    Public Virtual IHttpResponsePtr DequeueResponse() = 0;
-    
+    Public Virtual IHttpResponsePtr DequeueLocalResponse() = 0;
+
+    /**
+     * @brief Gets and removes the front HTTP response from the cloud queue. Thread-safe.
+     * @return Pointer to the HTTP response, or nullptr if cloud queue is empty
+     */
+    Public Virtual IHttpResponsePtr DequeueCloudResponse() = 0;
+
     /**
      * @brief Check if the queue is empty
      * @return true if queue is empty, false otherwise

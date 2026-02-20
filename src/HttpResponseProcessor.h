@@ -29,7 +29,7 @@ class HttpResponseProcessor final : public IHttpResponseProcessor {
             return false;
         }
         
-        IHttpResponsePtr response = responseQueue->DequeueResponse();
+        IHttpResponsePtr response = responseQueue->DequeueLocalResponse();
         if (response == nullptr) {
             return false;
         }
