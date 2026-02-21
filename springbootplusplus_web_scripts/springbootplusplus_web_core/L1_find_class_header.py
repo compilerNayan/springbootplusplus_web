@@ -105,12 +105,19 @@ def find_class_header_file(class_name: str, search_root: str = ".", include_fold
     # Step 4: Validate results
     if len(matching_headers) == 0:
         return None
-    elif len(matching_headers) > 1:
-        return None
+    elif len(matching_headers) == 1:
+        return matching_headers[0]
     else:
-        # Exactly one matching header found
-        class_header = matching_headers[0]
-        return class_header
+        # Multiple headers found: prefer the one under an "interface" directory
+        # (e.g. .../01-interface/02-INetworkStatusProvider.h) so we add reverse
+        # includes to the real interface header, not public wrappers or include stubs.
+        interface_headers = [h for h in matching_headers if "/interface/" in h.replace("\\", "/")]
+        if len(interface_headers) == 1:
+            return interface_headers[0]
+        if len(interface_headers) > 1:
+            return interface_headers[0]
+        # None under interface/; return first match (original behavior was None)
+        return matching_headers[0]
 
 
 def find_class_headers_for_names(class_names: List[str], search_root: str = ".", include_folders: Optional[List[str]] = None, exclude_folders: Optional[List[str]] = None) -> dict:
