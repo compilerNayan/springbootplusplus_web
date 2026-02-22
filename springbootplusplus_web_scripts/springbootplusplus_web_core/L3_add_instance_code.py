@@ -127,6 +127,27 @@ def generate_instance_code(scope: str, class_name: str, interface_name: str, val
         raise ValueError(f"Unknown scope: {scope}")
 
 
+def has_unprocessed_component_macro(file_path: str) -> bool:
+    """
+    Return True only if the file contains the exact unprocessed @Component or @Service annotation.
+    Skips if the annotation is already processed (/*--@Component--*/) or any other form (e.g. /* something @Component */).
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+    except Exception:
+        return False
+    processed_pattern = re.compile(r'^\s*/\*--\s*@(Component|Service)\s*--\*/\s*$')
+    unprocessed_pattern = re.compile(r'^\s*/\*\s*@(Component|Service)\s*\*/\s*$')
+    for line in lines:
+        s = line.strip()
+        if processed_pattern.match(s):
+            continue
+        if unprocessed_pattern.match(s):
+            return True
+    return False
+
+
 def inject_instance_code(file_path: str, dry_run: bool = False) -> Dict[str, any]:
     """
     Inject instance code into a C++ file based on its scope and class information.
@@ -146,6 +167,12 @@ def inject_instance_code(file_path: str, dry_run: bool = False) -> Dict[str, any
     }
     
     try:
+        # Step 0: Skip unless file has exact unprocessed /* @Component */ or /* @Service */ (not /*--@Component--*/ or anything else)
+        if not has_unprocessed_component_macro(file_path):
+            results['success'] = True
+            results['info']['skipped'] = 'No unprocessed @Component/@Service macro'
+            return results
+
         # Step 1: Get the file scope
         scope = L2_get_file_scope.get_file_scope(file_path)
         results['info']['scope'] = scope

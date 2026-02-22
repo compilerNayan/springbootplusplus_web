@@ -67,6 +67,27 @@ struct Implementation<{interface_name}*> {{
 """
 
 
+def has_unprocessed_component_macro(file_path: str) -> bool:
+    """
+    Return True only if the file contains the exact unprocessed @Component or @Service annotation.
+    Skips if the annotation is already processed (/*--@Component--*/) or any other form (e.g. /* something @Component */).
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+    except Exception:
+        return False
+    processed_pattern = re.compile(r'^\s*/\*--\s*@(Component|Service)\s*--\*/\s*$')
+    unprocessed_pattern = re.compile(r'^\s*/\*\s*@(Component|Service)\s*\*/\s*$')
+    for line in lines:
+        s = line.strip()
+        if processed_pattern.match(s):
+            continue
+        if unprocessed_pattern.match(s):
+            return True
+    return False
+
+
 def inject_implementation_template(file_path: str, dry_run: bool = False) -> Dict[str, any]:
     """
     Inject implementation template code into a C++ file.
@@ -86,6 +107,12 @@ def inject_implementation_template(file_path: str, dry_run: bool = False) -> Dic
     }
     
     try:
+        # Step 0: Skip unless file has exact unprocessed /* @Component */ or /* @Service */ (not /*--@Component--*/ or anything else)
+        if not has_unprocessed_component_macro(file_path):
+            results['success'] = True
+            results['info']['skipped'] = 'No unprocessed @Component/@Service macro'
+            return results
+
         # Step 1: Get class names
         class_names = find_class_names.find_class_names(file_path)
         if not class_names:
