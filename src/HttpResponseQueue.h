@@ -5,11 +5,6 @@
 #include <queue>
 #include <mutex>
 
-/** Prefix for request IDs that go to the local server queue. */
-static constexpr const char* kLocalRequestIdPrefix = "local_";
-/** Prefix for request IDs that go to the cloud server queue. */
-static constexpr const char* kCloudRequestIdPrefix = "cloud_";
-
 /* @Component */
 class HttpResponseQueue final : public IHttpResponseQueue {
     Private std::queue<IHttpResponsePtr> localQueue_;
@@ -27,11 +22,11 @@ class HttpResponseQueue final : public IHttpResponseQueue {
 
     Public Void EnqueueResponse(IHttpResponsePtr response) override {
         if (response == nullptr) return;
-        StdString requestId = response->GetRequestId();
-        if (requestId.find(kLocalRequestIdPrefix) == 0) {
+        RequestSource source = response->GetRequestSource();
+        if (source == RequestSource::LocalServer) {
             std::lock_guard<std::mutex> lock(localMutex_);
             localQueue_.push(std::move(response));
-        } else if (requestId.find(kCloudRequestIdPrefix) == 0) {
+        } else if (source == RequestSource::CloudServer) {
             std::lock_guard<std::mutex> lock(cloudMutex_);
             cloudQueue_.push(std::move(response));
         }

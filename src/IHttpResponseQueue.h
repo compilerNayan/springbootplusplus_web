@@ -15,8 +15,8 @@ class IHttpResponseQueue {
     // ============================================================================
     
     /**
-     * @brief Enqueues an HTTP response into the queue. Routes by response->GetRequestId():
-     *        "local_" prefix -> local queue, "cloud_" prefix -> cloud queue.
+     * @brief Enqueues an HTTP response into the queue. Routes by response->GetRequestSource():
+     *        LocalServer -> local queue, CloudServer -> cloud queue.
      * @param response Pointer to the HTTP response to enqueue
      */
     Public Virtual Void EnqueueResponse(IHttpResponsePtr response) = 0;
