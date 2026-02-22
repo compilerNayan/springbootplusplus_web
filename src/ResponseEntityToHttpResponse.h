@@ -92,7 +92,7 @@ namespace ResponseEntityConverter {
         
         // Create SimpleHttpResponse with status, headers, and body (empty requestId)
         StdString emptyRequestId = "";
-        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(emptyRequestId, statusCode, statusMessage, headers, bodyStr);
+        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(emptyRequestId, RequestSource::LocalServer, statusCode, statusMessage, headers, bodyStr);
         return response;
     }
 
@@ -142,7 +142,7 @@ namespace ResponseEntityConverter {
         }
         
         // Create SimpleHttpResponse with status, headers, and body
-        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(requestId, statusCode, statusMessage, headers, bodyStr);
+        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(requestId, RequestSource::LocalServer, statusCode, statusMessage, headers, bodyStr);
         return response;
     }
 
@@ -163,7 +163,7 @@ namespace ResponseEntityConverter {
         
         // Create SimpleHttpResponse with status, headers, and empty body (empty requestId)
         StdString emptyRequestId = "";
-        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(emptyRequestId, statusCode, statusMessage, headers, bodyStr);
+        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(emptyRequestId, RequestSource::LocalServer, statusCode, statusMessage, headers, bodyStr);
         return response;
     }
 
@@ -183,7 +183,7 @@ namespace ResponseEntityConverter {
         StdString bodyStr = "";
         
         // Create SimpleHttpResponse with status, headers, and empty body
-        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(requestId, statusCode, statusMessage, headers, bodyStr);
+        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(requestId, RequestSource::LocalServer, statusCode, statusMessage, headers, bodyStr);
         return response;
     }
 
@@ -225,7 +225,7 @@ namespace ResponseEntityConverter {
         StdMap<StdString, StdString> headers;
         headers["Content-Type"] = "application/json";
         
-        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(emptyRequestId, statusCode, statusMessage, headers, bodyStr);
+        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(emptyRequestId, RequestSource::LocalServer, statusCode, statusMessage, headers, bodyStr);
         return response;
     }
 
@@ -266,7 +266,7 @@ namespace ResponseEntityConverter {
         StdMap<StdString, StdString> headers;
         headers["Content-Type"] = "application/json";
         
-        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(requestId, statusCode, statusMessage, headers, bodyStr);
+        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(requestId, RequestSource::LocalServer, statusCode, statusMessage, headers, bodyStr);
         return response;
     }
 
@@ -285,7 +285,7 @@ namespace ResponseEntityConverter {
         StdMap<StdString, StdString> headers;
         StdString emptyBody = "";
         
-        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(emptyRequestId, statusCode, statusMessage, headers, emptyBody);
+        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(emptyRequestId, RequestSource::LocalServer, statusCode, statusMessage, headers, emptyBody);
         return response;
     }
 
@@ -303,7 +303,7 @@ namespace ResponseEntityConverter {
         StdMap<StdString, StdString> headers;
         StdString emptyBody = "";
         
-        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(requestId, statusCode, statusMessage, headers, emptyBody);
+        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(requestId, RequestSource::LocalServer, statusCode, statusMessage, headers, emptyBody);
         return response;
     }
 
