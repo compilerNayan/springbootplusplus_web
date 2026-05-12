@@ -12,11 +12,15 @@
 
 DefineStandardPointers(IEndpointSecurityConfig)
 
+class EndpointSecurityValidator;
+
 class IEndpointSecurityConfig {
 
     Public Virtual ~IEndpointSecurityConfig() = default;
 
-    Public Virtual NoDiscard Bool IsAllowed(CStdString& url, HttpMethod method, const JwtAuthenticationToken& token) const = 0;
+    friend class EndpointSecurityValidator;
+
+    Protected Virtual NoDiscard Bool IsAllowed(CStdString& url, HttpMethod method, const JwtAuthenticationToken& token) const = 0;
 
     /**
      * Hook for subclasses; not callable on IEndpointSecurityConfig* from outside the hierarchy.

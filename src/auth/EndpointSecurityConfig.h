@@ -31,7 +31,7 @@ class EndpointSecurityConfig : public IEndpointSecurityConfig {
         rules[StdString(url)][method] = authorizer;
     }
 
-    Public NoDiscard Bool IsAllowed(CStdString& url, HttpMethod method, const JwtAuthenticationToken& token) const override {
+    Protected NoDiscard Bool IsAllowed(CStdString& url, HttpMethod method, const JwtAuthenticationToken& token) const override {
         std::lock_guard<std::mutex> lock(rulesMutex);
         Val pathIt = rules.find(StdString(url));
         if (pathIt == rules.end()) {
