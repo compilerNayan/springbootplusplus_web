@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate #include lines for security config headers and inject them after
-#include "ISecurityConfigRegistry.h" in a target file (also accepts a line-commented
-``// #include "ISecurityConfigRegistry.h"`` and replaces it with an active include line).
+#include "ISecurityConfigRegistry.h" in a target file.
 
 Replaces the registry #include line together with any immediately following
 contiguous quoted #include lines (blank lines stop the run), so repeated
@@ -18,10 +17,10 @@ from typing import List, Sequence, Tuple
 
 _REGISTRY_INCLUDE_LINE = '#include "ISecurityConfigRegistry.h"'
 
-# Active registry include line (replacement always uses this form, even when the file had // #include).
-# First line may be: #include "..." or // #include "..." (commented-out include is accepted).
+# Registry line + zero or more following #include "..." lines; \s* may span newlines
+# so a blank line between includes stops the tail (next #include must follow only horizontal whitespace on its line).
 _INCLUDE_BLOCK_RE = re.compile(
-    r'(^[ \t]*(?://[ \t]*)?#include\s+"ISecurityConfigRegistry\.h"\s*\r?\n)'
+    r'(^[ \t]*#include\s+"ISecurityConfigRegistry\.h"\s*\r?\n)'
     r'(?:^[ \t]*#include\s+"[^"]+"\s*\r?\n)*',
     re.MULTILINE | re.IGNORECASE,
 )

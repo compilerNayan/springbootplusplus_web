@@ -23,41 +23,6 @@ import L3_generate_security_config_registrations as L3  # noqa: E402
 import L4_generate_security_config_includes as L4  # noqa: E402
 
 
-def _log_security_codegen_diagnostics(
-    target_file: str, text: str, includes_ok: bool, regs_ok: bool
-) -> None:
-    """Explain L5 failures on stderr (build logs)."""
-    if includes_ok and regs_ok:
-        return
-    if not includes_ok:
-        if "ISecurityConfigRegistry.h" not in text:
-            print(
-                f"[springbootplusplus_web] L5 security codegen: {target_file}: "
-                f'missing #include "ISecurityConfigRegistry.h" (registry header unchanged).',
-                file=sys.stderr,
-            )
-        else:
-            print(
-                f"[springbootplusplus_web] L5 security codegen: {target_file}: "
-                f"could not match the ISecurityConfigRegistry #include block "
-                f'(expected `#include \"ISecurityConfigRegistry.h\"` or `// #include \"...\"` on one line).',
-                file=sys.stderr,
-            )
-    if not regs_ok:
-        if "PLACEHOLDER" not in text.upper() or "SECURITY" not in text.upper():
-            print(
-                f"[springbootplusplus_web] L5 security codegen: {target_file}: "
-                f"registration placeholder not found (expected // PLACEHOLDER FOR SECURITY CONFIG REGISTRATIONS).",
-                file=sys.stderr,
-            )
-        else:
-            print(
-                f"[springbootplusplus_web] L5 security codegen: {target_file}: "
-                f"placeholder text present but line did not match the expected pattern.",
-                file=sys.stderr,
-            )
-
-
 def apply_security_config_codegen(
     target_file: str,
     header_paths: Sequence[str],
@@ -92,9 +57,6 @@ def apply_security_config_codegen(
     text, includes_ok = L4.replace_registry_include_block(text, header_paths)
     text, regs_ok = L3.replace_placeholder_with_registrations(text, class_names)
     success = bool(includes_ok and regs_ok)
-
-    if not success:
-        _log_security_codegen_diagnostics(str(path), text, includes_ok, regs_ok)
 
     if success and not dry_run:
         path.write_text(text, encoding="utf-8")
@@ -154,8 +116,6 @@ def main() -> None:
     )
 
     if not result["success"]:
-        if os.environ.get("SPRINGBOOTPLUSPLUS_WEB_SECURITY_CODEGEN_VERBOSE"):
-            print(f"[springbootplusplus_web] L5 result: {result}", file=sys.stderr)
         raise SystemExit(1)
 
     raise SystemExit(0)
