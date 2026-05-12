@@ -2,6 +2,9 @@
 #define I_AUTHORIZATION_FILTER_H
 
 #include <StandardDefines.h>
+#include <utility>
+
+#include "../ResponseEntity.h"
 #include "JwtAuthenticationToken.h"
 
 DefineStandardPointers(IAuthorizationFilter)
@@ -16,10 +19,12 @@ class IAuthorizationFilter {
 
     /**
      * @param authenticationToken The parsed JWT authentication token to evaluate for access.
-     * @return true if the request is allowed to continue to the endpoint handler.
-     * @return false if the request must be rejected; the caller should send an appropriate response (e.g. 401 Unauthorized or 403 Forbidden).
+     * @return pair.first true if the request is allowed to continue to the endpoint handler.
+     * @return pair.first false if the request must be rejected.
+     * @return pair.second optional response to send when rejected (e.g. 401/403 with message body).
      */
-    Public Virtual Bool Authorize(const JwtAuthenticationToken& authenticationToken) = 0;
+    Public Virtual std::pair<Bool, optional<ResponseEntity<StdString>>> Authorize(
+        const JwtAuthenticationToken& authenticationToken) = 0;
 };
 
 #endif // I_AUTHORIZATION_FILTER_H

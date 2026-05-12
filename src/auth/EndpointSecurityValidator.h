@@ -16,9 +16,13 @@ class EndpointSecurityValidator : public IEndpointSecurityValidator {
 
     Public ~EndpointSecurityValidator() override = default;
 
-    Public NoDiscard Bool IsAllowed(CStdString& url, HttpMethod method, const JwtAuthenticationToken& token) const override {
+    Public NoDiscard std::pair<Bool, optional<ResponseEntity<StdString>>> IsAllowed(
+        CStdString& url, HttpMethod method, const JwtAuthenticationToken& token) const override {
         if (!endpointSecurityConfig) {
-            return false;
+            return {
+                false,
+                ResponseEntity<StdString>::InternalServerError("EndpointSecurityConfig is not available")
+            };
         }
         return endpointSecurityConfig->IsAllowed(url, method, token);
     }

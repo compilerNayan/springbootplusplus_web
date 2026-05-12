@@ -31,19 +31,20 @@ class EndpointSecurityConfig : public IEndpointSecurityConfig {
         rules[StdString(url)][method] = authorizer;
     }
 
-    Protected NoDiscard Bool IsAllowed(CStdString& url, HttpMethod method, const JwtAuthenticationToken& token) const override {
+    Protected NoDiscard std::pair<Bool, optional<ResponseEntity<StdString>>> IsAllowed(
+        CStdString& url, HttpMethod method, const JwtAuthenticationToken& token) const override {
         std::lock_guard<std::mutex> lock(rulesMutex);
         Val pathIt = rules.find(StdString(url));
         if (pathIt == rules.end()) {
-            return true;
+            return {true, {}};
         }
         Val methodIt = pathIt->second.find(method);
         if (methodIt == pathIt->second.end()) {
-            return true;
+            return {true, {}};
         }
         IAuthorizationFilterPtr filter = methodIt->second;
         if (!filter) {
-            return true;
+            return {true, {}};
         }
         return filter->Authorize(token);
     }

@@ -20,7 +20,8 @@ class IEndpointSecurityConfig {
 
     friend class EndpointSecurityValidator;
 
-    Protected Virtual NoDiscard Bool IsAllowed(CStdString& url, HttpMethod method, const JwtAuthenticationToken& token) const = 0;
+    Protected Virtual NoDiscard std::pair<Bool, optional<ResponseEntity<StdString>>> IsAllowed(
+        CStdString& url, HttpMethod method, const JwtAuthenticationToken& token) const = 0;
 
     /**
      * Hook for subclasses; not callable on IEndpointSecurityConfig* from outside the hierarchy.
