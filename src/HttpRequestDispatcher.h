@@ -15,6 +15,7 @@
 #include "auth/IJwtAuthenticator.h"
 #include "auth/IEndpointSecurityValidator.h"
 #include "auth/PrimaryAuthorizationFilter.h"
+#include "auth/ISecurityConfigRegistry.h"
 
 #ifdef ARDUINO
     #include <Arduino.h>
@@ -47,6 +48,9 @@ class HttpRequestDispatcher : public IHttpRequestDispatcher {
 
     /* @Autowired */
     Private IJwtAuthenticatorPtr jwtAuthenticator;
+
+    /* @Autowired */
+    Private ISecurityConfigRegistryPtr securityConfigRegistry;
 
     /* @Autowired */
     Private IEndpointSecurityValidatorPtr endpointSecurityValidator;
