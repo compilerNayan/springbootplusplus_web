@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """
-Generate #include lines for security config headers and inject them after
-#include "ISecurityConfigRegistry.h" in a target file.
+Generate #include lines for security config headers and inject them immediately after
+``#include <StandardDefines.h>`` in a target file.
 
-Replaces the registry #include line together with any immediately following
-contiguous quoted #include lines (blank lines stop the run), so repeated
-injection refreshes the block without duplicating lines.
+The anchor line may be written as ``// #include <...>``; it is always rewritten as an
+active ``#include <StandardDefines.h>``.
+
+Any consecutive ``#include "..."`` lines that match the paths we are about to inject are
+removed first (so re-runs stay idempotent) without touching other headers (e.g.
+``IEndpointSecurityRuleManager.h``) that follow after a blank line or unrelated include.
 """
 
 from __future__ import annotations
@@ -15,14 +18,17 @@ import re
 from pathlib import Path
 from typing import List, Sequence, Tuple
 
-_REGISTRY_INCLUDE_LINE = '#include "ISecurityConfigRegistry.h"'
+_STANDARD_DEFINES_LINE = "#include <StandardDefines.h>"
 
-# Registry line + zero or more following #include "..." lines; \s* may span newlines
-# so a blank line between includes stops the tail (next #include must follow only horizontal whitespace on its line).
-_INCLUDE_BLOCK_RE = re.compile(
-    r'(^[ \t]*#include\s+"ISecurityConfigRegistry\.h"\s*\r?\n)'
-    r'(?:^[ \t]*#include\s+"[^"]+"\s*\r?\n)*',
+# First line only: StandardDefines (optional // line comment).
+_STANDARD_DEFINES_LINE_RE = re.compile(
+    r"^[ \t]*(?://[ \t]*)?#include\s*<StandardDefines\.h>\s*\r?\n",
     re.MULTILINE | re.IGNORECASE,
+)
+
+_QUOTED_INCLUDE_RE = re.compile(
+    r"^[ \t]*#include\s+\"([^\"]+)\"\s*\r?\n",
+    re.MULTILINE,
 )
 
 
@@ -42,14 +48,13 @@ def generate_include_lines(header_paths: Sequence[str]) -> List[str]:
     Build one #include "path" string per path (deduplicated, order preserved).
 
     Paths are used exactly as given (e.g. ``auth/MyConfig.h`` or ``MyConfig.h``).
-    ``ISecurityConfigRegistry.h`` is skipped if present; that line stays fixed in the target file.
     """
     lines: List[str] = []
     for p in _unique_preserve(header_paths):
         norm = p.strip()
         if not norm:
             continue
-        if norm.replace("\\", "/").endswith("ISecurityConfigRegistry.h"):
+        if norm.replace("\\", "/").lower() in ("standarddefines.h", "<standarddefines.h>"):
             continue
         lines.append(f'#include "{norm}"')
     return lines
@@ -60,27 +65,58 @@ def generate_include_snippet(header_paths: Sequence[str]) -> str:
     return "\n".join(generate_include_lines(header_paths))
 
 
-def replace_registry_include_block(source: str, header_paths: Sequence[str]) -> Tuple[str, bool]:
+def _strip_trailing_generated_includes(
+    source: str, start: int, header_paths: Sequence[str]
+) -> int:
     """
-    Replace the first occurrence of the ISecurityConfigRegistry #include line and any
-    contiguous quoted #includes immediately after it with the registry line plus new includes.
+    From ``start``, drop consecutive ``#include "rel/path"`` lines whose path is in
+    ``header_paths`` (posix-normalized). Stops at the first line that is not such an include.
+    Returns the index in ``source`` after removed material.
+    """
+    want = {Path(p.strip()).as_posix() for p in header_paths if p.strip()}
+    if not want:
+        return start
+
+    pos = start
+    while pos < len(source):
+        m = _QUOTED_INCLUDE_RE.match(source, pos)
+        if not m:
+            break
+        inc_path = Path(m.group(1)).as_posix()
+        if inc_path not in want:
+            break
+        pos = m.end()
+    return pos
+
+
+def replace_standard_defines_include_block(source: str, header_paths: Sequence[str]) -> Tuple[str, bool]:
+    """
+    Rewrite the ``#include <StandardDefines.h>`` line and refresh generated quoted includes
+    immediately after it.
 
     Returns:
-        (new_source, True) if the registry include was found.
+        (new_source, True) if the StandardDefines include line was found.
     """
-    m = _INCLUDE_BLOCK_RE.search(source)
+    m = _STANDARD_DEFINES_LINE_RE.search(source)
     if not m:
         return source, False
 
-    registry_line = _REGISTRY_INCLUDE_LINE + "\n"
+    anchor_line = _STANDARD_DEFINES_LINE + "\n"
+    after_anchor = m.end()
+    stripped_end = _strip_trailing_generated_includes(source, after_anchor, header_paths)
+
     extra = generate_include_lines(header_paths)
     if extra:
-        insertion = registry_line + "\n".join(extra) + "\n"
+        insertion = anchor_line + "\n".join(extra) + "\n"
     else:
-        insertion = registry_line
+        insertion = anchor_line
 
-    new_source = source[: m.start()] + insertion + source[m.end() :]
+    new_source = source[: m.start()] + insertion + source[stripped_end:]
     return new_source, True
+
+
+# Backward-compatible name for callers
+replace_registry_include_block = replace_standard_defines_include_block
 
 
 def inject_security_config_includes(
@@ -90,10 +126,10 @@ def inject_security_config_includes(
     dry_run: bool = False,
 ) -> bool:
     """
-    Read ``file_path`` (UTF-8), replace the registry include block, write back unless dry_run.
+    Read ``file_path`` (UTF-8), replace the StandardDefines include block, write back unless dry_run.
 
     Returns:
-        True if the registry include block was found.
+        True if the anchor include line was found.
     """
     path = Path(file_path)
     try:
@@ -101,7 +137,7 @@ def inject_security_config_includes(
     except OSError:
         return False
 
-    new_text, ok = replace_registry_include_block(text, header_paths)
+    new_text, ok = replace_standard_defines_include_block(text, header_paths)
     if not ok:
         return False
     if dry_run:
@@ -117,16 +153,16 @@ def validate_cpp_like_file(file_path: str) -> bool:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate security-config #include lines or inject them after ISecurityConfigRegistry.h"
+        description="Generate security-config #include lines or inject them after #include <StandardDefines.h>"
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
     gen = sub.add_parser("generate", help="Print #include lines to stdout")
     gen.add_argument("headers", nargs="+", help='Header paths as in #include "...", e.g. auth/Foo.h Foo.h')
 
-    inj = sub.add_parser("inject", help="Patch file: keep registry include, add/replace following includes")
+    inj = sub.add_parser("inject", help="Patch file: refresh includes after #include <StandardDefines.h>")
     inj.add_argument("file", help="Target source/header (e.g. SecurityConfigRegistry.h)")
-    inj.add_argument("headers", nargs="*", help="Headers to #include after the registry line")
+    inj.add_argument("headers", nargs="*", help='Headers to #include after #include <StandardDefines.h>')
     inj.add_argument("--dry-run", action="store_true", help="Do not write the file")
 
     args = parser.parse_args()
@@ -145,6 +181,7 @@ def main() -> None:
 __all__ = [
     "generate_include_lines",
     "generate_include_snippet",
+    "replace_standard_defines_include_block",
     "replace_registry_include_block",
     "inject_security_config_includes",
     "main",

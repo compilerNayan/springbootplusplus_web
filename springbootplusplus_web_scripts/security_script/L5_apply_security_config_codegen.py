@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Orchestrate security-config codegen: L4 (includes after ISecurityConfigRegistry.h) +
+Orchestrate security-config codegen: L4 (quoted includes after #include <StandardDefines.h>) +
 L3 (Register(make_shared<...>()) in RegisterAllSecurityConfigs placeholder) on one target file.
 
 Reads the target once, applies both transforms, writes once (unless --dry-run).
@@ -35,7 +35,7 @@ def apply_security_config_codegen(
 
     Args:
         target_file: Path to the registry header (e.g. SecurityConfigRegistry.h).
-        header_paths: Values for ``#include "..."`` lines after ``ISecurityConfigRegistry.h``.
+        header_paths: Values for ``#include "..."`` lines immediately after ``#include <StandardDefines.h>``.
         class_names: Concrete ISecurityConfig implementation class names for ``make_shared``.
 
     Returns:
@@ -54,7 +54,7 @@ def apply_security_config_codegen(
             "error": "could not read target file",
         }
 
-    text, includes_ok = L4.replace_registry_include_block(text, header_paths)
+    text, includes_ok = L4.replace_standard_defines_include_block(text, header_paths)
     text, regs_ok = L3.replace_placeholder_with_registrations(text, class_names)
     success = bool(includes_ok and regs_ok)
 
@@ -83,13 +83,13 @@ def main() -> None:
     parser.add_argument(
         "--target",
         required=True,
-        help="Header to patch (must contain ISecurityConfigRegistry include + registration placeholder)",
+        help="Header to patch (must contain #include <StandardDefines.h> + registration placeholder)",
     )
     parser.add_argument(
         "--files",
         nargs="*",
         default=[],
-        help='Header paths for #include "..." after ISecurityConfigRegistry.h (order preserved)',
+        help='Header paths for #include "..." after #include <StandardDefines.h> (order preserved)',
     )
     parser.add_argument(
         "--classes",
