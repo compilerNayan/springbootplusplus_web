@@ -1,0 +1,27 @@
+#ifndef ENDPOINT_SECURITY_VALIDATOR_H
+#define ENDPOINT_SECURITY_VALIDATOR_H
+
+#include <StandardDefines.h>
+
+#include "IEndpointSecurityConfig.h"
+#include "IEndpointSecurityValidator.h"
+
+/* @Component */
+class EndpointSecurityValidator : public IEndpointSecurityValidator {
+
+    /* @Autowired */
+    Private IEndpointSecurityConfigPtr endpointSecurityConfig;
+
+    Public EndpointSecurityValidator() = default;
+
+    Public ~EndpointSecurityValidator() override = default;
+
+    Public NoDiscard Bool IsAllowed(CStdString& url, HttpMethod method, const JwtAuthenticationToken& token) const override {
+        if (!endpointSecurityConfig) {
+            return false;
+        }
+        return endpointSecurityConfig->IsAllowed(url, method, token);
+    }
+};
+
+#endif // ENDPOINT_SECURITY_VALIDATOR_H
