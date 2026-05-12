@@ -1,3 +1,5 @@
+#ifndef JWT_AUTHENTICATOR_H
+#define JWT_AUTHENTICATOR_H
 #include <string>
 #include <map>
 #include <vector>
@@ -266,3 +268,5 @@ public:
         return token;
     }
 };
+
+#endif // JWT_AUTHENTICATOR_H
