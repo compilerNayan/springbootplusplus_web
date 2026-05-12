@@ -14,6 +14,7 @@
 
 #include "auth/IJwtAuthenticator.h"
 #include "auth/IEndpointSecurityValidator.h"
+#include "auth/PrimaryAuthorizationFilter.h"
 
 #ifdef ARDUINO
     #include <Arduino.h>
@@ -82,7 +83,7 @@ class HttpRequestDispatcher : public IHttpRequestDispatcher {
 
         try {
             IHttpResponsePtr response = nullptr;
-            response = AuthenticateRequest(patternUrl, request->GetMethod(), request->GetBearerToken());
+            response = AuthenticateRequest(requestId, patternUrl, request->GetMethod(), request->GetBearerToken());
             if(response != nullptr) {
                 return response;
             }

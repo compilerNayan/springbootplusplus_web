@@ -6,6 +6,8 @@
 #include <mutex>
 
 #include "IEndpointSecurityConfig.h"
+#include "IAuthorizationFilterFactory.h"
+#include "PrimaryAuthorizationFilter.h"
 
 /**
  * Associates (URL path, HTTP method) pairs with an IAuthorizationFilter.
@@ -17,9 +19,15 @@
 class EndpointSecurityConfig : public IEndpointSecurityConfig {
 
     Private StdMap<StdString, StdMap<HttpMethod, IAuthorizationFilterPtr>> rules;
+    Private IAuthorizationFilterPtr primaryAuthorizationFilter;
     Private mutable std::mutex rulesMutex;
 
-    Public EndpointSecurityConfig() = default;
+    /* @Autowired */
+    Private IAuthorizationFilterFactoryPtr authorizationFilterFactory;
+
+    Public EndpointSecurityConfig() {
+        primaryAuthorizationFilter = authorizationFilterFactory->GetFilter<PrimaryAuthorizationFilter>();
+    };
 
     Public ~EndpointSecurityConfig() override = default;
 
@@ -42,6 +50,11 @@ class EndpointSecurityConfig : public IEndpointSecurityConfig {
         if (methodIt == pathIt->second.end()) {
             return {true, {}};
         }
+        auto response = primaryAuthorizationFilter->Authorize(token);
+        if(response.first == false) {
+            return response;
+        }
+        
         IAuthorizationFilterPtr filter = methodIt->second;
         if (!filter) {
             return {true, {}};

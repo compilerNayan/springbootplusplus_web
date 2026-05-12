@@ -211,13 +211,13 @@ public:
 
         auto parts = splitJwt(jwt);
         if (parts.size() != 3) {
-            token.claims["error"] = "Invalid JWT format";
+            token.claims[kJwtAuthFailureClaimKey] = "Invalid JWT format";
             return token;
         }
 
         std::string headerPayload = parts[0] + "." + parts[1];
         if (!verifySignature(headerPayload, parts[2])) {
-            token.claims["error"] = "Invalid signature";
+            token.claims[kJwtAuthFailureClaimKey] = "Invalid signature";
             return token;
         }
 
@@ -225,13 +225,13 @@ public:
         DynamicJsonDocument doc(1024);
         auto err = deserializeJson(doc, payloadJson);
         if (err) {
-            token.claims["error"] = "Failed to parse payload";
+            token.claims[kJwtAuthFailureClaimKey] = "Failed to parse payload";
             return token;
         }
 
         std::string timeError;
         if (!validateTimeClaims(doc, timeError)) {
-            token.claims["error"] = timeError;
+            token.claims[kJwtAuthFailureClaimKey] = timeError;
             return token;
         }
 
