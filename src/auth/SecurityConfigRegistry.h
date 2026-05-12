@@ -29,7 +29,7 @@ class SecurityConfigRegistry : public ISecurityConfigRegistry {
     }
 
     Private Void RegisterAllSecurityConfigs() {
-
+        //PLACEHOLDER FOR SECURITY CONFIG REGISTRATIONS
     }
 };
 
