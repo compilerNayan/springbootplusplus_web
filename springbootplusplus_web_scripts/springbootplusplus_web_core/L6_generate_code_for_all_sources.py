@@ -6,9 +6,10 @@ This script:
 1. Finds all C++ source files (using logic from L6_cpp_di_preprocessor.py)
 2. Generates endpoint code for each file using L5_generate_code_for_file.py
 3. Marks REST-related annotations as processed (/* @RestController */, /* @RequestMapping("...") */, etc.) in processed files
-4. Stores valid results in a map
-5. Adds #include statements to EventDispatcher.h
-6. Updates InitializeMappings() function with all generated code
+4. Marks /* @Configuration */ as processed (/*--@Configuration--*/) on every discovered C++ file (security_script)
+5. Stores valid results in a map
+6. Adds #include statements to EventDispatcher.h
+7. Updates InitializeMappings() function with all generated code
 """
 
 import argparse
@@ -214,6 +215,30 @@ def comment_rest_macros(file_path: str, dry_run: bool = False) -> bool:
     except Exception as e:
         # print(f"Error modifying file '{file_path}': {e}")
         return False
+
+
+def process_configuration_annotations_for_all_cpp_files(
+    cpp_files: List[str], dry_run: bool = False
+) -> None:
+    """
+    After REST-related macros are processed on controllers, rewrite /* @Configuration */
+    to /*--@Configuration--*/ on every file in ``cpp_files`` (same discovery set as RestController).
+
+    Delegates to ``security_script/L6_comment_configuration_annotation.py``. No-op if that
+    module cannot be imported or ``security_script`` is missing.
+    """
+    security_script_dir = Path(__file__).resolve().parent.parent / "security_script"
+    if not security_script_dir.is_dir():
+        return
+    sd = str(security_script_dir)
+    if sd not in sys.path:
+        sys.path.insert(0, sd)
+    try:
+        from L6_comment_configuration_annotation import comment_configuration_annotation
+    except ImportError:
+        return
+    for fp in cpp_files:
+        comment_configuration_annotation(fp, dry_run=dry_run)
 
 
 def generate_code_map(cpp_files: List[str], dry_run: bool = False) -> Dict[str, Dict[str, str]]:
@@ -545,9 +570,12 @@ Examples:
     
     # print(f"📁 Found {len(cpp_files)} C++ source files")
     
-    # Generate code map (this will also comment out REST macros)
+    # Generate code map (this will also comment out REST macros on RestController files)
     code_map = generate_code_map(cpp_files, dry_run=args.dry_run)
-    
+
+    # After REST annotations are processed above, mark /* @Configuration */ on all sources
+    process_configuration_annotations_for_all_cpp_files(cpp_files, dry_run=args.dry_run)
+
     if not code_map:
         # print("⚠️  No files with RestController found. Nothing to update.")
         sys.exit(0)
@@ -661,6 +689,7 @@ Examples:
 __all__ = [
     'find_cpp_files',
     'comment_rest_macros',
+    'process_configuration_annotations_for_all_cpp_files',
     'generate_code_map',
     'generate_includes',
     'add_includes_to_event_dispatcher',

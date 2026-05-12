@@ -4,7 +4,8 @@ Resolve a single header/source that uses /* @Configuration */ into the concrete
 ISecurityConfig class name and the file's absolute path.
 
 Uses L1_check_configuration_annotation (annotation + class placement) and
-L2_get_security_config_class_name (class inheriting ISecurityConfig).
+L2_get_security_config_class_name (class inheriting ISecurityConfig). On success,
+rewrites /* @Configuration */ via L6_comment_configuration_annotation before returning.
 """
 
 from __future__ import annotations
@@ -21,16 +22,19 @@ if script_dir not in sys.path:
 
 import L1_check_configuration_annotation as L1  # noqa: E402
 import L2_get_security_config_class_name as L2  # noqa: E402
+import L6_comment_configuration_annotation as L6_cfg  # noqa: E402
 
 
 def resolve_security_configuration_file(file_path: str) -> Optional[Dict[str, str]]:
     """
     If ``file_path`` has a valid /* @Configuration */ with a following class that
-    inherits ISecurityConfig, return ``{"class_name": ..., "file_path": <absolute>}``.
+    inherits ISecurityConfig, mark the annotation processed on disk, then return
+    ``{"class_name": ..., "file_path": <absolute>}``.
 
     Returns:
         Dict with keys ``class_name`` and ``file_path``, or None if the file does not
         qualify (missing annotation, unreadable file, or no ISecurityConfig subclass found).
+        On success, ``/* @Configuration */`` is rewritten to ``/*--@Configuration--*/`` in the same file.
     """
     path = Path(file_path)
     try:
@@ -47,6 +51,9 @@ def resolve_security_configuration_file(file_path: str) -> Optional[Dict[str, st
     class_name = L2.get_security_config_class_name(str(resolved))
     if not class_name:
         return None
+
+    # Mark /* @Configuration */ as processed (/*--@Configuration--*/) now that this file was consumed.
+    L6_cfg.comment_configuration_annotation(str(resolved), dry_run=False)
 
     return {
         "class_name": class_name,
