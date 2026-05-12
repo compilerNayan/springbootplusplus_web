@@ -18,8 +18,10 @@
 #endif
 
 #include "JwtAuthenticationToken.h"
+#include "IJwtAuthenticator.h"
 
-class JwtAuthenticator {
+/* @Component */
+class JwtAuthenticator : public IJwtAuthenticator {
 private:
     static constexpr long long MIN_VALID_UNIX_TIME = 946684800; // 2000-01-01 UTC
 
@@ -199,7 +201,7 @@ UwIDAQAB
     }
 
 public:
-    JwtAuthenticationToken authenticate(const std::string& bearerToken) {
+    JwtAuthenticationToken GetAuthenticationToken(const std::string& bearerToken) override {
         JwtAuthenticationToken token;
 
         std::string jwt = bearerToken;
