@@ -3,27 +3,36 @@
 
 #include <StandardDefines.h>
 #include <HttpMethod.h>
+#include <mutex>
 
 #include "IEndpointSecurityConfig.h"
 
 /**
  * Associates (URL path, HTTP method) pairs with an IAuthorizationFilter.
  * If no rule is registered for a path and method, IsAllowed returns true (no authorization required).
+ *
+ * Register filters with AddRule<T>(url, method, ...).
  */
 /* @Component */
 class EndpointSecurityConfig : public IEndpointSecurityConfig {
 
     Private StdMap<StdString, StdMap<HttpMethod, IAuthorizationFilterPtr>> rules;
+    Private mutable std::mutex rulesMutex;
 
     Public EndpointSecurityConfig() = default;
 
     Public ~EndpointSecurityConfig() override = default;
 
-    Public Void AddRule(CStdString& url, HttpMethod method, IAuthorizationFilterPtr authorizer) override {
+    Protected Void AddRuleImpl(CStdString& url,
+                               HttpMethod method,
+                               std::function<IAuthorizationFilterPtr()> resolveAuthorizer) override {
+        std::lock_guard<std::mutex> lock(rulesMutex);
+        IAuthorizationFilterPtr authorizer = resolveAuthorizer();
         rules[StdString(url)][method] = authorizer;
     }
 
     Public NoDiscard Bool IsAllowed(CStdString& url, HttpMethod method, const JwtAuthenticationToken& token) const override {
+        std::lock_guard<std::mutex> lock(rulesMutex);
         Val pathIt = rules.find(StdString(url));
         if (pathIt == rules.end()) {
             return true;
