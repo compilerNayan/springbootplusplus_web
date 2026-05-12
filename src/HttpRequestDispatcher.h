@@ -12,6 +12,9 @@
 #include <cctype>
 #include <iomanip>
 
+#include "auth/IJwtAuthenticator.h"
+#include "auth/IEndpointSecurityValidator.h"
+
 #ifdef ARDUINO
     #include <Arduino.h>
     #define std_print(x) Serial.print(x)
