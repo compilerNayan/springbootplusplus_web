@@ -3,14 +3,14 @@
 
 #include <StandardDefines.h>
 
-#include "IEndpointSecurityConfig.h"
+#include "IEndpointSecurityRuleManager.h"
 #include "IEndpointSecurityValidator.h"
 
 /* @Component */
 class EndpointSecurityValidator : public IEndpointSecurityValidator {
 
     /* @Autowired */
-    Private IEndpointSecurityConfigPtr endpointSecurityConfig;
+    Private IEndpointSecurityRuleManagerPtr endpointSecurityConfig;
 
     Public EndpointSecurityValidator() = default;
 

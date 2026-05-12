@@ -1,5 +1,5 @@
-#ifndef I_ENDPOINT_SECURITY_CONFIG_H
-#define I_ENDPOINT_SECURITY_CONFIG_H
+#ifndef I_ENDPOINT_SECURITY_RULE_MANAGER_H
+#define I_ENDPOINT_SECURITY_RULE_MANAGER_H
 
 #include <StandardDefines.h>
 #include <functional>
@@ -10,13 +10,13 @@
 
 #include "IAuthorizationFilter.h"
 
-DefineStandardPointers(IEndpointSecurityConfig)
+DefineStandardPointers(IEndpointSecurityRuleManager)
 
 class EndpointSecurityValidator;
 
-class IEndpointSecurityConfig {
+class IEndpointSecurityRuleManager {
 
-    Public Virtual ~IEndpointSecurityConfig() = default;
+    Public Virtual ~IEndpointSecurityRuleManager() = default;
 
     friend class EndpointSecurityValidator;
 
@@ -24,7 +24,7 @@ class IEndpointSecurityConfig {
         CStdString& url, HttpMethod method, const JwtAuthenticationToken& token) const = 0;
 
     /**
-     * Hook for subclasses; not callable on IEndpointSecurityConfig* from outside the hierarchy.
+     * Hook for subclasses; not callable on IEndpointSecurityRuleManager* from outside the hierarchy.
      * Under lock, resolves authorizer via resolveAuthorizer() and stores it for (url, method).
      */
     Protected Virtual Void AddRuleImpl(CStdString& url,
@@ -37,7 +37,7 @@ class IEndpointSecurityConfig {
     Public template<typename TFilter, typename... Args>
     Void AddRule(CStdString& url, HttpMethod method, Args&&... args) {
         static_assert(std::is_base_of<IAuthorizationFilter, TFilter>::value,
-                      "IEndpointSecurityConfig::AddRule<TFilter>: TFilter must derive from IAuthorizationFilter");
+                      "IEndpointSecurityRuleManager::AddRule<TFilter>: TFilter must derive from IAuthorizationFilter");
         auto tup = std::make_tuple(std::forward<Args>(args)...);
         AddRuleImpl(url, method, [tup]() mutable -> IAuthorizationFilterPtr {
             return std::apply(
@@ -49,4 +49,4 @@ class IEndpointSecurityConfig {
     }
 };
 
-#endif // I_ENDPOINT_SECURITY_CONFIG_H
+#endif // I_ENDPOINT_SECURITY_RULE_MANAGER_H

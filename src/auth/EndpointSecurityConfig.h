@@ -5,7 +5,7 @@
 #include <HttpMethod.h>
 #include <mutex>
 
-#include "IEndpointSecurityConfig.h"
+#include "IEndpointSecurityRuleManager.h"
 #include "IAuthorizationFilterFactory.h"
 #include "PrimaryAuthorizationFilter.h"
 
@@ -16,7 +16,7 @@
  * Register filters with AddRule<T>(url, method, ...).
  */
 /* @Component */
-class EndpointSecurityConfig : public IEndpointSecurityConfig {
+class EndpointSecurityConfig : public IEndpointSecurityRuleManager {
 
     Private StdMap<StdString, StdMap<HttpMethod, IAuthorizationFilterPtr>> rules;
     Private IAuthorizationFilterPtr primaryAuthorizationFilter;
@@ -54,7 +54,7 @@ class EndpointSecurityConfig : public IEndpointSecurityConfig {
         if(response.first == false) {
             return response;
         }
-        
+
         IAuthorizationFilterPtr filter = methodIt->second;
         if (!filter) {
             return {true, {}};
