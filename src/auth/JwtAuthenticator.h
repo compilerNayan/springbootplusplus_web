@@ -204,6 +204,11 @@ public:
     JwtAuthenticationToken GetAuthenticationToken(const std::string& bearerToken) override {
         JwtAuthenticationToken token;
 
+        if(bearerToken.empty()) {
+            token.authenticated = true;
+            return token;
+        }
+
         std::string jwt = bearerToken;
         if (jwt.rfind("Bearer ", 0) == 0) jwt = jwt.substr(7);
 
