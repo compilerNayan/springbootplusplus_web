@@ -5,15 +5,21 @@
 #include <functional>
 #include <tuple>
 #include <type_traits>
-#include <typeindex>
 #include <utility>
 
 #include "IAuthorizationFilter.h"
 
 DefineStandardPointers(IAuthorizationFilterFactory)
 
+/** Stable per-T identity for caching without RTTI (embedded builds often use -fno-rtti). */
+template<typename T>
+inline const void* AuthorizationFilterTypeKey() {
+    static const char kKey = 0;
+    return &kKey;
+}
+
 /**
- * Polymorphic factory for IAuthorizationFilter instances (cached per std::type_index).
+ * Polymorphic factory for IAuthorizationFilter instances (cached per concrete filter type).
  *
  * Same pattern as IThreadPool: GetFilter<T>(...) is a non-virtual template on this interface that forwards
  * to the virtual GetFilterImpl; concrete classes implement GetFilterImpl only.
@@ -32,7 +38,7 @@ class IAuthorizationFilterFactory {
      * and cache it. createIfMissing must be copyable so it can be stored in std::function.
      */
     Public Virtual IAuthorizationFilterPtr GetFilterImpl(
-        const std::type_index& filterType,
+        const void* filterTypeKey,
         std::function<IAuthorizationFilterPtr()> createIfMissing) = 0;
 
     /**
@@ -44,7 +50,7 @@ class IAuthorizationFilterFactory {
         static_assert(std::is_base_of<IAuthorizationFilter, T>::value,
                       "IAuthorizationFilterFactory::GetFilter<T>: T must derive from IAuthorizationFilter");
         auto tup = std::make_tuple(std::forward<Args>(args)...);
-        return GetFilterImpl(std::type_index(typeid(T)), [tup]() mutable -> IAuthorizationFilterPtr {
+        return GetFilterImpl(AuthorizationFilterTypeKey<T>(), [tup]() mutable -> IAuthorizationFilterPtr {
             return std::apply(
                 [](auto&&... a) -> IAuthorizationFilterPtr {
                     return make_ptr<T>(std::forward<decltype(a)>(a)...);

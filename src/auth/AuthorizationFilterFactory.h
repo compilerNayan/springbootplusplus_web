@@ -3,19 +3,18 @@
 
 #include <StandardDefines.h>
 #include <mutex>
-#include <typeindex>
 
 #include "IAuthorizationFilterFactory.h"
 
 /**
- * Thread-safe cache of authorization filters keyed by concrete type (std::type_index).
+ * Thread-safe cache of authorization filters keyed by concrete type (pointer identity per T).
  *
  * Use IAuthorizationFilterFactory::GetFilter<T>(...) from a pointer to this interface or concrete type.
  */
 /* @Component */
 class AuthorizationFilterFactory : public IAuthorizationFilterFactory {
 
-    Private StdUnorderedMap<std::type_index, IAuthorizationFilterPtr> instances;
+    Private StdUnorderedMap<const void*, IAuthorizationFilterPtr> instances;
     Private std::mutex instancesMutex;
 
     Public AuthorizationFilterFactory() = default;
@@ -26,15 +25,15 @@ class AuthorizationFilterFactory : public IAuthorizationFilterFactory {
     AuthorizationFilterFactory& operator=(const AuthorizationFilterFactory&) = delete;
 
     Public IAuthorizationFilterPtr GetFilterImpl(
-        const std::type_index& filterType,
+        const void* filterTypeKey,
         std::function<IAuthorizationFilterPtr()> createIfMissing) override {
         std::lock_guard<std::mutex> lock(instancesMutex);
-        Val existing = instances.find(filterType);
+        Val existing = instances.find(filterTypeKey);
         if (existing != instances.end()) {
             return existing->second;
         }
         IAuthorizationFilterPtr created = createIfMissing();
-        instances[filterType] = created;
+        instances[filterTypeKey] = created;
         return created;
     }
 };
