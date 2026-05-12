@@ -174,11 +174,15 @@ class HttpRequestDispatcher : public IHttpRequestDispatcher {
 
     }    
     
-    Private NoDiscard IHttpResponsePtr AuthenticateRequest(CStdString& url, HttpMethod method, CStdString& bearerToken) {
+    Private NoDiscard IHttpResponsePtr AuthenticateRequest(CStdString &requestId, CStdString& url, HttpMethod method, CStdString& bearerToken) {
         JwtAuthenticationToken authenticationToken = jwtAuthenticator->GetAuthenticationToken(bearerToken);
         std::pair<Bool, optional<ResponseEntity<StdString>>> result = endpointSecurityValidator->IsAllowed(url, method, authenticationToken);
         if(result.first == false) {
-            return ResponseEntityConverter::ToHttpResponse<StdString>(result.second.value());
+            auto response = ResponseEntityConverter::ToHttpResponse<StdString>(result.second.value());
+            if(!requestId.empty()) {
+                response->SetRequestId(requestId);
+            }
+            return response;
         }
         return nullptr;
     }
