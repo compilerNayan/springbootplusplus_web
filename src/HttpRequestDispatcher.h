@@ -41,6 +41,12 @@ class HttpRequestDispatcher : public IHttpRequestDispatcher {
 
     Private EndpointTrie endpointTrie;
 
+    /* @Autowired */
+    Private IJwtAuthenticatorPtr jwtAuthenticator;
+
+    /* @Autowired */
+    Private IEndpointSecurityValidatorPtr endpointSecurityValidator;
+
     Public HttpRequestDispatcher() {
         InitializeMappings();
         InsertMappingsToTrie();
@@ -73,7 +79,11 @@ class HttpRequestDispatcher : public IHttpRequestDispatcher {
 
         try {
             IHttpResponsePtr response = nullptr;
-            
+            response = AuthenticateRequest(patternUrl, request->GetMethod(), request->GetBearerToken());
+            if(response != nullptr) {
+                return response;
+            }
+
             switch (request->GetMethod()) {
                 case HttpMethod::GET:
                     if (getMappings.find(patternUrl) == getMappings.end()) {
@@ -159,6 +169,15 @@ class HttpRequestDispatcher : public IHttpRequestDispatcher {
             return response;
         }
 
+    }    
+    
+    Private NoDiscard IHttpResponsePtr AuthenticateRequest(CStdString& url, HttpMethod method, CStdString& bearerToken) {
+        JwtAuthenticationToken authenticationToken = jwtAuthenticator->GetAuthenticationToken(bearerToken);
+        std::pair<Bool, optional<ResponseEntity<StdString>>> result = endpointSecurityValidator->IsAllowed(url, method, authenticationToken);
+        if(result.first == false) {
+            return ResponseEntityConverter::ToHttpResponse<StdString>(result.second.value());
+        }
+        return nullptr;
     }
 
     Private Void InitializeMappings() {
