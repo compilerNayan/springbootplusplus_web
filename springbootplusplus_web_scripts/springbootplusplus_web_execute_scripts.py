@@ -90,28 +90,13 @@ def security_config_include_string_from_scan_roots(
     include_roots: List[str],
 ) -> str:
     """
-    Build the string to use inside ``#include "..."`` for a config header.
+    Return the resolved absolute path (posix) for use inside ``#include "..."``.
 
-    Uses the longest matching path among ``include_roots`` (same roots passed to L6/L7),
-    so nested roots (e.g. lib then lib/src) resolve to the most specific relative path.
-    Falls back to the file basename if no root matches.
+    ``include_roots`` is kept for call-site compatibility with the RestController scan
+    list; it is not used (includes always use the full filesystem path of the config header).
     """
-    p = Path(absolute_file_path).resolve()
-    best: Optional[str] = None
-    best_parts = -1
-    for root in include_roots:
-        root_p = Path(root).resolve()
-        if not root_p.exists():
-            continue
-        try:
-            rel = p.relative_to(root_p).as_posix()
-        except ValueError:
-            continue
-        n = len(root_p.parts)
-        if n > best_parts:
-            best_parts = n
-            best = rel
-    return best if best is not None else p.name
+    del include_roots  # unused; same signature as when relative paths were derived from roots
+    return Path(absolute_file_path).resolve().as_posix()
 
 
 def run_l5_security_config_registry_codegen(
@@ -125,8 +110,8 @@ def run_l5_security_config_registry_codegen(
     Run L5 (``apply_security_config_codegen``) on ``SecurityConfigRegistry.h``.
 
     ``entries`` should match ``SECURITY_CONFIGURATION_ENTRIES``: each item provides
-    ``file_path`` (absolute) and ``class_name``. Include lines use paths relative to the
-    longest matching directory in ``include_roots`` (same list as the RestController scan).
+    ``file_path`` (absolute) and ``class_name``. Include lines use the config header's
+    resolved absolute path inside ``#include "..."``.
     """
     registry = security_config_registry_header_path(library_dir)
     if not registry.is_file():

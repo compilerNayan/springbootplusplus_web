@@ -54,7 +54,9 @@ def apply_security_config_codegen(
             "error": "could not read target file",
         }
 
-    text, includes_ok = L4.replace_standard_defines_include_block(text, header_paths)
+    text, includes_ok = L4.replace_standard_defines_include_block(
+        text, header_paths, registry_header_path=str(path)
+    )
     text, regs_ok = L3.replace_placeholder_with_registrations(text, class_names)
     success = bool(includes_ok and regs_ok)
 

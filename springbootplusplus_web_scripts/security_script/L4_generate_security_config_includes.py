@@ -16,7 +16,7 @@ from __future__ import annotations
 import argparse
 import re
 from pathlib import Path
-from typing import List, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 _STANDARD_DEFINES_LINE = "#include <StandardDefines.h>"
 
@@ -47,7 +47,8 @@ def generate_include_lines(header_paths: Sequence[str]) -> List[str]:
     """
     Build one #include "path" string per path (deduplicated, order preserved).
 
-    Paths are used exactly as given (e.g. ``auth/MyConfig.h`` or ``MyConfig.h``).
+    Paths are used exactly as given. Use absolute posix paths (e.g. ``/home/proj/src/Foo.h``)
+when you need stable ``#include`` lines across include roots.
     """
     lines: List[str] = []
     for p in _unique_preserve(header_paths):
@@ -65,31 +66,71 @@ def generate_include_snippet(header_paths: Sequence[str]) -> str:
     return "\n".join(generate_include_lines(header_paths))
 
 
+def _want_resolved_paths(header_paths: Sequence[str]) -> set[str]:
+    out: set[str] = set()
+    for p in header_paths:
+        s = p.strip()
+        if not s:
+            continue
+        try:
+            out.add(Path(s).resolve().as_posix())
+        except OSError:
+            out.add(Path(s).as_posix())
+    return out
+
+
 def _strip_trailing_generated_includes(
-    source: str, start: int, header_paths: Sequence[str]
+    source: str,
+    start: int,
+    header_paths: Sequence[str],
+    *,
+    registry_header_path: Optional[str] = None,
 ) -> int:
     """
-    From ``start``, drop consecutive ``#include "rel/path"`` lines whose path is in
-    ``header_paths`` (posix-normalized). Stops at the first line that is not such an include.
-    Returns the index in ``source`` after removed material.
+    From ``start``, drop consecutive ``#include "..."`` lines that refer to the same files
+    as ``header_paths`` (by resolved path). Resolves relative quoted paths against the
+    registry header's directory when ``registry_header_path`` is set.
     """
-    want = {Path(p.strip()).as_posix() for p in header_paths if p.strip()}
-    if not want:
+    want_resolved = _want_resolved_paths(header_paths)
+    if not want_resolved:
         return start
+
+    reg_parent = (
+        Path(registry_header_path).resolve().parent
+        if registry_header_path
+        else None
+    )
 
     pos = start
     while pos < len(source):
         m = _QUOTED_INCLUDE_RE.match(source, pos)
         if not m:
             break
-        inc_path = Path(m.group(1)).as_posix()
-        if inc_path not in want:
+        quoted = m.group(1).strip()
+        candidates: List[str] = []
+        pq = Path(quoted)
+        if pq.is_absolute():
+            try:
+                candidates.append(pq.resolve().as_posix())
+            except OSError:
+                candidates.append(pq.as_posix())
+        if reg_parent is not None:
+            try:
+                candidates.append((reg_parent / quoted).resolve().as_posix())
+            except OSError:
+                pass
+        if not any(c in want_resolved for c in candidates):
             break
         pos = m.end()
     return pos
 
 
-def replace_standard_defines_include_block(source: str, header_paths: Sequence[str]) -> Tuple[str, bool]:
+def replace_standard_defines_include_block(
+    source: str,
+    header_paths: Sequence[str],
+    *,
+    registry_header_path: Optional[str] = None,
+) -> Tuple[str, bool]:
     """
     Rewrite the ``#include <StandardDefines.h>`` line and refresh generated quoted includes
     immediately after it.
@@ -103,7 +144,12 @@ def replace_standard_defines_include_block(source: str, header_paths: Sequence[s
 
     anchor_line = _STANDARD_DEFINES_LINE + "\n"
     after_anchor = m.end()
-    stripped_end = _strip_trailing_generated_includes(source, after_anchor, header_paths)
+    stripped_end = _strip_trailing_generated_includes(
+        source,
+        after_anchor,
+        header_paths,
+        registry_header_path=registry_header_path,
+    )
 
     extra = generate_include_lines(header_paths)
     if extra:
@@ -137,7 +183,9 @@ def inject_security_config_includes(
     except OSError:
         return False
 
-    new_text, ok = replace_standard_defines_include_block(text, header_paths)
+    new_text, ok = replace_standard_defines_include_block(
+        text, header_paths, registry_header_path=str(path)
+    )
     if not ok:
         return False
     if dry_run:
